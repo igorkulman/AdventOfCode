@@ -7,14 +7,22 @@ long zeroCount = 0;
 
 void process(std::string& line) {
     auto rotation = line[0];
-    line.erase(0,1);
-    auto value = stoi(line);
+    line.erase(0, 1);
+    auto value = stol(line);
+
     if (rotation == 'L') {
+        if (value >= position) {
+            zeroCount += (value - position) / 100 + (position > 0 ? 1 : 0);
+        }
         value = -value;
+    } else if (rotation == 'R') {
+        auto passes = (position + value) / 100;
+        zeroCount += passes;
     }
-    position = (position + 100 + value) % 100;
-    if (position == 0) {
-        zeroCount++;
+
+    position = (position + value) % 100;
+    if (position < 0) {
+        position += 100;
     }
 }
 

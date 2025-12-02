@@ -5,6 +5,15 @@
 
 long sum = 0;
 
+std::string repeat(const std::string& input, unsigned num)
+{
+    std::string ret;
+    ret.reserve(input.size() * num);
+    while (num--)
+        ret += input;
+    return ret;
+}
+
 std::vector<std::string> split(const std::string& line, const char separator) {
     std::vector<std::string> parts;
     std::stringstream ss(line);
@@ -24,14 +33,18 @@ void process(const std::string& input) {
         auto start = std::stol(bond[0]);
         auto end = std::stol(bond[1]);
 
-        for (long i = start; i<=end; ++i) {
+        for (long i = start; i<=end; i++) {
             auto str = std::to_string(i);
-            if (str.length() % 2 == 1) {
-                continue;
-            }
 
-            if (str.substr(0, str.length()/2) == str.substr(str.length()/2)) {
-                sum += i;
+            for (long length = 1; length <= str.length() / 2; length++) {
+                auto id = str.substr(0, length);
+                auto multiplier = str.length() / length;
+                auto full = repeat(id, str.length() / length);
+
+                if (full == str) {
+                    sum += i;
+                    break;
+                }
             }
         }
     }

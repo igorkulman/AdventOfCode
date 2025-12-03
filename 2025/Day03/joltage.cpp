@@ -5,21 +5,29 @@
 long sum = 0;
 
 void process(std::string& line) {
-    long max1Index = 0;
-    for (auto i = max1Index; i < line.length() - 1; i++) {
-        if (line[i] > line[max1Index]) {
-            max1Index = i;
+    const int count = 12;
+    long indices[count] = {0};
+
+    for (auto iteration = 0; iteration < count; ++iteration) {
+        int start = 0;
+        if (iteration > 0) {
+            start = indices[iteration - 1] + 1;
+        }
+        indices[iteration] = start;
+
+        auto maxIndex = line.length() - (count - iteration - 1);
+        for (auto i = indices[iteration]; i < maxIndex; i++) {
+            if (line[i] > line[indices[iteration]]) {
+                indices[iteration] = i;
+            }
         }
     }
-    long max2Index = max1Index +1;
-    for (auto i = max2Index; i < line.length(); i++) {
-        if (line[i] > line[max2Index]) {
-            max2Index = i;
-        }
+    long value = 0;
+    for (auto j = 0; j < count; ++j) {
+        value = value * 10 + (line[indices[j]] - '0');
     }
-    auto max = (line[max1Index] - '0') * 10 + (line[max2Index] - '0');
-    std::cout << "Max pair: " << max << " in " << line << '\n';
-    sum += max;
+    std::cout << "Max pair: " << value << " in " << line << '\n';
+    sum += value;
 }
 
 int main(int argc, const char * argv[]) {

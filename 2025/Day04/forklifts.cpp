@@ -8,34 +8,45 @@ long sum = 0;
 void process(const char* filename) {
     std::ifstream file(filename);
     std::vector<std::vector<char>> grid;
+    std::vector<std::vector<char>> modified_grid;
 
     std::string line;
     while (std::getline(file, line)) {
         grid.emplace_back(line.begin(), line.end());
+        modified_grid.emplace_back(line.begin(), line.end());
     }
 
-    for (auto j = 0; j < grid.size(); ++j) {
-        for (auto i = 0; i < grid[j].size(); ++i) {
-            if (grid[j][i] != '@') {
-                continue;
-            }
+    auto wasModified = true;
 
-            auto adjacentCount = 0;
+    while (wasModified) {
+        grid = modified_grid;
+        wasModified = false;
 
-            for (auto di = -1; di <= 1; ++di) {
-                for (auto dj = -1; dj <= 1; ++dj) {
-                    if ((di == 0 && dj == 0) || (j + dj < 0) || (j + dj >= grid.size()) || (i + di < 0) || (i + di >= grid[j].size())) {
-                        continue;
-                    }
+        for (auto j = 0; j < grid.size(); ++j) {
+            for (auto i = 0; i < grid[j].size(); ++i) {
+                if (grid[j][i] != '@') {
+                    continue;
+                }
 
-                    if (grid[j + dj][i + di] == '@') {
-                        ++adjacentCount;
+                auto adjacentCount = 0;
+
+                for (auto di = -1; di <= 1; ++di) {
+                    for (auto dj = -1; dj <= 1; ++dj) {
+                        if ((di == 0 && dj == 0) || (j + dj < 0) || (j + dj >= grid.size()) || (i + di < 0) || (i + di >= grid[j].size())) {
+                            continue;
+                        }
+
+                        if (grid[j + dj][i + di] == '@') {
+                            ++adjacentCount;
+                        }
                     }
                 }
-            }
 
-            if (adjacentCount < 4) {
-                ++sum;
+                if (adjacentCount < 4) {
+                    modified_grid[j][i] = '.';
+                    wasModified = true;
+                    ++sum;
+                }
             }
         }
     }

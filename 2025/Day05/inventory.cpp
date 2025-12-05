@@ -32,23 +32,37 @@ void process(const char* filename) {
             auto start = std::stol(parts[0]);
             auto end = std::stol(parts[1]);
             ranges.push_back({start, end});
-            continue;
-        }
-
-        auto number = std::stol(line);
-        auto found = false;
-        for (const auto& [start, end] : ranges) {
-            if (number >= start && number <= end) {
-                found = true;
-                break;
-            }
-        }
-
-        if (found) {
-            sum += 1;
         }
     }
 
+    std::sort(ranges.begin(), ranges.end(), [](const auto& a, const auto& b) {
+            const auto& [a_start, a_end] = a;
+            const auto& [b_start, b_end] = b;
+            return a_start < b_start;
+    });
+
+    std::vector<std::tuple<long, long>> merged_ranges;
+    for (const auto& range : ranges) {
+        auto [start, end] = range;
+
+        if (merged_ranges.empty()) {
+            merged_ranges.emplace_back(start, end);
+            continue;
+        }
+
+        auto& [m_start, m_end] = merged_ranges.back();
+
+        if (start <= m_end + 1) {
+            m_end = std::max(m_end, end);
+        } else {
+            merged_ranges.emplace_back(start, end);
+        }
+    }
+
+    for (const auto& range : merged_ranges) {
+        auto [start, end] = range;
+        sum += (end - start + 1);
+    }
 }
 
 int main(int argc, const char * argv[]) {

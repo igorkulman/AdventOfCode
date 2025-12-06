@@ -2,63 +2,60 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <sstream>
+#include <algorithm>
+#include <cctype>
 
 long sum = 0;
 
-std::vector<std::string> split(const std::string& line, const char separator) {
-    std::vector<std::string> parts;
-    std::stringstream ss(line);
-    std::string item;
-
-    while (std::getline(ss, item, separator)) {
-        parts.push_back(item);
-    }
-    return parts;
-}
-
 void process(const char* filename) {
     std::ifstream file(filename);
-    std::vector<std::vector<long>> matrix;
-    std::vector<std::string> operations;
+    std::vector<std::vector<char>> matrix;
+    std::size_t max_cols = 0;
 
     std::string line;
     while (std::getline(file, line)) {
-        auto parts = split(line, ' ');
+        std::vector<char> parts(line.begin(), line.end());
+        matrix.push_back(parts);
+        max_cols = std::max(max_cols, parts.size());
+    }
 
-        if (parts[0] == "+" || parts[0] == "*") {
-            for (auto part : parts) {
-                if (part.empty()) {
-                    continue;
-                }
-                operations.push_back(part);
-            }
-
-            for (auto i = 0; i < operations.size(); ++i) {
-                long result = matrix[0][i];
-                for (auto j = 1; j < matrix.size(); ++j) {
-                    if (operations[i] == "+") {
-                        result += matrix[j][i];
-                    }
-                    if (operations[i] == "*") {
-                        result *= matrix[j][i];
-                    }
-                }
-
-                sum += result;
-            }
-
-            return;
+    for (auto& row : matrix) {
+        if (row.size() < max_cols) {
+            row.resize(max_cols, ' ');
         }
+    }
 
-        std::vector<long> row;
-        for (auto part: parts) {
-            if (part.empty()) {
+    std::vector<long> numbers;
+    for (int i = static_cast<int>(matrix[0].size()) - 1; i >= 0; --i) {
+        std::string number_string = "";
+        for (int j = 0; j < static_cast<int>(matrix.size()) - 1; ++j) {
+            if (matrix[j][i] == ' ') {
                 continue;
             }
-            row.push_back(stol(part));
+            number_string += matrix[j][i];
         }
-        matrix.push_back(row);
+
+        if (!number_string.empty()) {
+            numbers.push_back(stol(number_string));
+        }
+
+        auto op = matrix[matrix.size() - 1][i];
+        if (op == '*' || op == '+') {
+            long result = 0;
+            if (op == '*') {
+                result = 1;
+            }
+            for (auto number: numbers) {
+                if (op == '+') {
+                    result += number;
+                }
+                if (op == '*') {
+                    result *= number;
+                }
+            }
+            sum = sum + result;
+            numbers.clear();
+        }
     }
 }
 

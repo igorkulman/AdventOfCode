@@ -2,7 +2,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <set>
+#include <map>
 #include <cctype>
 
 long sum = 0;
@@ -11,35 +11,30 @@ void process(const char* filename) {
     std::ifstream file(filename);
 
     std::string line;
-    std::set<long> next_pos = {};
+    std::map<long, long> next_pos;
+
+    long index = 0;
     while (std::getline(file, line)) {
+        auto pos = line.find('S');
+        if (pos != std::string::npos) {
+            next_pos[pos] = 1;
+            continue;
+        }
+
         std::vector<char> parts(line.begin(), line.end());
-        std::set<long> next_next_pos = {};
-        for (auto i=0; i < parts.size(); ++i) {
-            if (parts[i] == 'S') {
-                next_pos.insert(i);
-                continue;
-            }
-        }
 
-        for (auto pos: next_pos) {
-            if (parts[pos] == '.' || parts[pos] == 'S') {
-                next_next_pos.insert(pos);
-            }
+        for (const auto [pos, count]: next_pos) {
             if (parts[pos] == '^') {
-                sum += 1;
-                if (pos > 0) {
-                    next_next_pos.insert(pos - 1);
-                }
-                if (pos < parts.size() - 2) {
-                    next_next_pos.insert(pos + 1);
-                }
+                next_pos[pos - 1] += count;
+                next_pos[pos + 1] += count;
+                next_pos[pos] = 0;
             }
         }
-
-        next_pos = next_next_pos;
     }
 
+    for (const auto [pos, count]: next_pos) {
+        sum += count;
+    }
 }
 
 int main(int argc, const char * argv[]) {

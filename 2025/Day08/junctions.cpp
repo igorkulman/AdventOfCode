@@ -2,7 +2,6 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include <map>
 #include <cctype>
 #include <cmath>
 #include <sstream>
@@ -26,17 +25,18 @@ public:
         return parent[x];
     }
 
-    void unite(int a, int b) {
+    bool unite(int a, int b) {
         a = find(a);
         b = find(b);
         if (a == b) {
-            return;
+            return false;
         }
         if (sz[a] < sz[b]) {
             std::swap(a, b);
         }
         parent[b] = a;
         sz[a] += sz[b];
+        return true;
     }
 
     std::unordered_map<int, std::vector<int>> components() {
@@ -77,7 +77,7 @@ std::vector<std::string> split(const std::string& line, const char separator) {
     return parts;
 }
 
-void process(const char* filename, long limit) {
+void process(const char* filename) {
     std::ifstream file(filename);
 
     std::string line;
@@ -102,28 +102,21 @@ void process(const char* filename, long limit) {
         return dist1 < dist2;
     });
 
-    DisjointSet dsu(static_cast<int>(points.size()));
+    DisjointSet dsu(points.size());
+    auto remaining = points.size();
 
-    for (auto i = 0L; i < limit; ++i) {
-        auto [dist, idx1, idx2] = pairs[i];
-        auto p1 = points[idx1];
-        auto p2 = points[idx2];
-
-        dsu.unite(idx1, idx2);
+    std::tuple<long,long> last_pair;
+    auto pos = 0;
+    while (remaining > 1 && pos < pairs.size()) {
+        auto [dist, idx1, idx2] = pairs[pos++];
+        if (dsu.unite(static_cast<int>(idx1), static_cast<int>(idx2))) {
+            last_pair = {idx1, idx2};
+            --remaining;
+        }
     }
 
-    auto components = dsu.components();
-
-    std::vector<size_t> sizes;
-    for (const auto& [root, members] : components) {
-        sizes.push_back(members.size());
-    }
-    std::sort(sizes.begin(), sizes.end(), std::greater<>());
-
-    sum = 1;
-    for (auto i = 0; i < 3; ++i) {
-        sum *= sizes[i];
-    }
+    auto [p1, p2] = last_pair;
+    sum = points[p1].x * points[p2].x;
 }
 
 int main(int argc, const char * argv[]) {
@@ -133,7 +126,7 @@ int main(int argc, const char * argv[]) {
     }
 
     const char* filename = argv[1];
-    process(filename, 1000);
+    process(filename);
 
     std::cout << sum << '\n';
     return 0;
